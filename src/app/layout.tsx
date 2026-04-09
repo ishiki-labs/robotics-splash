@@ -14,23 +14,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "fern.bot — Developer Infrastructure for Robotics",
+  title: "Enabling physical AI at scale",
   description:
-    "Inference, training, observability, and voice APIs for robots. An applied research lab backed by Y Combinator (W26).",
+    "Enabling physical AI at scale",
   metadataBase: new URL("https://fern.bot"),
   openGraph: {
-    title: "fern.bot — Developer Infrastructure for Robotics",
+    title: "Enabling physical AI at scale",
     description:
-      "Inference, training, observability, and voice APIs for robots.",
+      "Enabling physical AI at scale",
     url: "https://fern.bot",
     siteName: "fern.bot",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "fern.bot — Developer Infrastructure for Robotics",
+    title: "Enabling physical AI at scale",
     description:
-      "Inference, training, observability, and voice APIs for robots.",
+      "Enabling physical AI at scale",
   },
 };
 
