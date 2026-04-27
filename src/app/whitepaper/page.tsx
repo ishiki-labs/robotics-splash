@@ -330,7 +330,7 @@ export default function Whitepaper() {
             <strong>robotics companies</strong> who want a custom world model
             fitted to their own embodiments and existing teleop data — so
             evaluation and RL training happen in <em>their</em> physics, not
-            a generic one. If any of those describe you, reach out.
+            a generic one. If any of those describe you, reach out at founders@fern.bot.
           </Body>
         </Section>
 
