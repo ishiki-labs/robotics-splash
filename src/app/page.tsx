@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import ParticleField from "@/components/ParticleField";
 import CursorGlow from "@/components/CursorGlow";
 
@@ -52,6 +53,19 @@ export default function Home() {
           >
             Enabling physical AI at scale
           </h1>
+
+          <Link
+            href="/whitepaper"
+            className="group mt-6 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-neutral-500 transition hover:text-neutral-900"
+          >
+            <span>Whitepaper</span>
+            <span
+              aria-hidden
+              className="translate-x-0 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+            >
+              →
+            </span>
+          </Link>
         </div>
 
         <p className="absolute bottom-6 text-xs text-neutral-300">

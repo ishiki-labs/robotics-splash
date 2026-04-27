@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# robotics-splash · fern.bot
 
-## Getting Started
+Marketing site + whitepaper for Fern. Two routes:
 
-First, run the development server:
+- `/` — minimal splash with the title and a link into the whitepaper.
+- `/whitepaper` — long-form explainer with an embedded **live world-model demo**.
+  The demo proxies through this Next.js app to a separate FastAPI service
+  running on a GPU host (Lambda Labs).
+
+## Local development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+For the embedded demo to function locally, copy `.env.example` → `.env.local`
+and fill the three values. They must match the matching env vars on the
+FastAPI GPU host.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+DFOT_BACKEND_URL=https://your-gpu-host.example.com
+DFOT_BACKEND_TOKEN=<openssl rand -hex 32>
+DFOT_SESSION_SECRET=<openssl rand -hex 32>
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+When unset, the page still renders — only the demo button is inert (the
+session-mint route returns 503 with a configuration hint).
 
-## Learn More
+## Deploying to Vercel
 
-To learn more about Next.js, take a look at the following resources:
+The whitepaper demo is gated by two layers of authentication. **Both** secrets
+must be configured on Vercel as **server-only** env vars (regular or
+"Sensitive" — never as Public/Exposed-to-Browser). The browser never sees
+them; the only thing leaving this site is a one-hour HMAC token minted at
+`/api/gpu/session`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Vercel env var          | Type            | Purpose                                                                                                                          |
+| ----------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `DFOT_BACKEND_URL`      | Server-only     | Base URL of the FastAPI GPU host. No trailing slash. Used by `/api/dfot/*` proxies and by `/api/gpu/session` to derive the WS URL. |
+| `DFOT_BACKEND_TOKEN`    | Server-only ⚠️  | Static shared secret. Stamped onto every HTTP request to the GPU host (`Authorization: Bearer …`). Must equal the value on the GPU host. |
+| `DFOT_SESSION_SECRET`   | Server-only ⚠️  | HMAC secret used to sign short-lived WebSocket session tokens. Must equal `DFOT_SESSION_SECRET` on the GPU host (`auth.py` verifies tokens with the same secret). |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+> ⚠️ Mark both `DFOT_BACKEND_TOKEN` and `DFOT_SESSION_SECRET` as **Sensitive**
+> in Vercel's UI so they don't appear in build logs or function output.
 
-## Deploy on Vercel
+### Two-layer auth model
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The GPU host enforces two independent gates:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **HTTP shared secret.** All HTTP routes (`/episodes`, `/init_frames/*`,
+   `/status`, …) require `Authorization: Bearer <DFOT_BACKEND_TOKEN>`. This
+   site's `lib/dfot/backend.ts` stamps that header onto every upstream
+   request. Random callers who happen to know the GPU URL get a 401.
+
+2. **WebSocket short-lived JWT.** The `/ws` endpoint requires
+   `?token=<JWT>&sid=<uuid>` where the JWT is HMAC-signed with
+   `DFOT_SESSION_SECRET` and bound to `aud: "dfot-ws"` with a 1-hour TTL.
+   `/api/gpu/session` mints these tokens; the browser plugs the URL straight
+   into `new WebSocket()`.
+
+Both secrets must rotate together on both hosts.
+
+## Repo layout
+
+```
+src/
+├── app/
+│   ├── page.tsx                          # splash (with whitepaper link)
+│   ├── whitepaper/page.tsx               # whitepaper (with embedded demo)
+│   └── api/
+│       ├── gpu/session/route.ts          # mints signed wsUrl
+│       └── dfot/{episodes,init_frames,status}/route.ts  # auth-stamped proxies
+├── components/
+│   ├── WhitepaperDemo.tsx                # lean rope-only WS playground
+│   ├── ParticleField.tsx
+│   └── CursorGlow.tsx
+└── lib/
+    ├── dfot/
+    │   ├── backend.ts                    # backendBaseUrl + auth headers
+    │   └── types.ts                      # DfotEpisode, fetchGpuSession
+    └── gpu/session-token.ts              # HS256 JWT signer
+
+public/
+├── videos/rope_gt_vs_sim.mp4             # GT vs model rollout, br_0000
+└── images/rope_gt_vs_sim_poster.png      # poster frame for the video
+```
