@@ -72,11 +72,6 @@ export default function Whitepaper() {
             world models from real robot data, so any policy can be benchmarked
             and improved without ever running on physical hardware.
           </p>
-          <p className="mt-4 text-[15px] leading-[1.75] text-neutral-700">
-            This page is a working draft. It explains what we&rsquo;re building,
-            shows what the simulator looks like today, and lets you drive it
-            live in your browser.
-          </p>
         </section>
 
         {/* The problem */}
@@ -263,6 +258,12 @@ export default function Whitepaper() {
             the actions you send — there&rsquo;s no recorded video being
             replayed.
           </Body>
+          <Body>
+            <strong>This demo is a proof of concept.</strong> It&rsquo;s pinned
+            to a single multi-task checkpoint trained on a public open dataset,
+            served just to prove the architecture and the live-driving loop
+            work end-to-end in a browser.
+          </Body>
           <p className="mt-3 font-mono text-[11px] uppercase tracking-wider text-neutral-500">
             Note: the GPU is shared. If the canvas takes a moment to come live,
             it&rsquo;s likely already in use by someone else.
@@ -272,27 +273,49 @@ export default function Whitepaper() {
           </div>
         </Section>
 
-        {/* Roadmap / closing */}
+        {/* Roadmap + audience / call to action. Combines the internal R&D
+            workstreams (architecture, first-party data, custom customer
+            models) with the user-facing surfaces (public benchmarks, RL
+            envs). They share a single narrative — the demo is the PoC, this
+            is where it goes. */}
         <Section title="What&rsquo;s next">
+          <Body>What we&rsquo;re actively working on:</Body>
           <List
             items={[
               <>
-                <strong>Public benchmarks.</strong> A growing catalog of
-                evaluation tasks — manipulation, navigation, mobile manipulation
-                — hosted on this site. Submit a policy, get a leaderboard
-                placement, see exactly where it succeeds and fails.
+                <strong>Architecture R&amp;D.</strong>{" "}
+                We&rsquo;re actively iterating on the model architecture for
+                decreasing sim-to-real gap, longer horizon stability, lower
+                per-frame latency, and sharper contact physics.
               </>,
               <>
-                <strong>RL environments.</strong> The same world model
-                exposed as a Gym-style environment for offline + online RL.
-                Train against learned physics, deploy to real robots without
-                ever burning hardware time on bad policies.
+                <strong>First-party data collection.</strong>{" "}
+                We&rsquo;re recording our own bimanual teleoperation in-house
+                on a growing fleet of robots — expanding the base
+                model&rsquo;s coverage of grippers, contact regimes, and scene
+                diversity well beyond what any single open dataset provides.
               </>,
               <>
-                <strong>More embodiments.</strong>{" "}
-                The current checkpoint covers four task families across two
-                robot platforms. We&rsquo;re expanding the data mix to cover
-                the long tail of grippers, arms, and contact regimes.
+                <strong>Custom world models for customers.</strong>{" "}
+                Most robotics companies already have terabytes of teleoperation
+                data sitting in cold storage from training their own policies.
+                We re-purpose that data to fit a world model on their specific
+                embodiments and tasks, so they can evaluate and RL-train their
+                checkpoints against <em>their</em> physics, not a generic one.
+              </>,
+              <>
+                <strong>Public benchmarks.</strong>{" "}
+                A growing catalog of evaluation tasks — manipulation,
+                navigation, mobile manipulation — hosted on this site. Submit
+                a policy, get a leaderboard placement, see exactly where it
+                succeeds and fails.
+              </>,
+              <>
+                <strong>RL environments.</strong>{" "}
+                The same world models exposed as Gym-style environments for
+                offline + online RL. Train against learned physics, deploy to
+                real robots without ever burning hardware time on bad
+                policies.
               </>,
             ]}
           />
@@ -304,9 +327,10 @@ export default function Whitepaper() {
             <strong>RL researchers</strong>{" "}
             who want Gym-style environments backed by learned physics, so
             training runs don&rsquo;t need real hardware in the loop. And{" "}
-            <strong>companies with deployed policies</strong> who want
-            apples-to-apples benchmarks against the rest of the field. If any
-            of those describe you, reach out.
+            <strong>robotics companies</strong> who want a custom world model
+            fitted to their own embodiments and existing teleop data — so
+            evaluation and RL training happen in <em>their</em> physics, not
+            a generic one. If any of those describe you, reach out.
           </Body>
         </Section>
 
