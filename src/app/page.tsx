@@ -31,10 +31,10 @@ export default function Home() {
       <ParticleField />
       <CursorGlow />
 
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4">
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-16">
         <div
-          className="flex aspect-square max-w-lg flex-col items-center justify-center rounded-3xl bg-white/70 text-center shadow-[0_0_80px_-20px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.03] backdrop-blur-md"
-          style={{ width: "min(90vw, 520px)", padding: "2.5rem" }}
+          className="flex max-w-xl flex-col items-center rounded-3xl bg-white/70 text-center shadow-[0_0_80px_-20px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.03] backdrop-blur-md"
+          style={{ width: "min(92vw, 600px)", padding: "2.5rem" }}
         >
           <YCBadge />
 
@@ -48,27 +48,49 @@ export default function Home() {
           />
 
           <h1
-            className="whitespace-nowrap font-[family-name:var(--font-serif)] text-3xl leading-[1.3] text-neutral-900 sm:text-4xl"
+            className="font-[family-name:var(--font-serif)] text-4xl leading-[1.15] text-neutral-900 sm:text-5xl sm:leading-[1.1]"
             style={{ marginTop: "3rem" }}
           >
             Enabling physical AI at scale
           </h1>
 
-          <Link
-            href="/whitepaper"
-            className="group mt-6 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-neutral-500 transition hover:text-neutral-900"
-          >
-            <span>Whitepaper</span>
-            <span
-              aria-hidden
-              className="translate-x-0 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+          <h2 className="mt-6 font-[family-name:var(--font-serif)] text-xl leading-[1.4] text-neutral-700 sm:text-2xl sm:leading-[1.4]">
+            Run your robot evals on high-fidelity environments built from your
+            training data, or on real hardware.
+          </h2>
+
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="https://calendly.com/robert-ishikilabs/fern-eval-platform-intro-call"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-2 rounded-full bg-neutral-900 px-6 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-white transition hover:bg-neutral-700"
             >
-              →
-            </span>
-          </Link>
+              <span>Schedule a meeting</span>
+              <span
+                aria-hidden
+                className="translate-x-0 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+              >
+                →
+              </span>
+            </a>
+
+            <Link
+              href="/whitepaper"
+              className="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-neutral-900 ring-1 ring-neutral-300 transition hover:bg-neutral-100"
+            >
+              <span>Whitepaper</span>
+              <span
+                aria-hidden
+                className="translate-x-0 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+              >
+                →
+              </span>
+            </Link>
+          </div>
         </div>
 
-        <p className="absolute bottom-6 text-xs text-neutral-300">
+        <p className="mt-8 text-xs text-neutral-300">
           &copy; {new Date().getFullYear()} Ishiki Labs, Inc.
         </p>
       </div>
