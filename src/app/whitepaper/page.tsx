@@ -146,16 +146,20 @@ export default function Whitepaper() {
           />
         </Section>
 
-        {/* GT vs sim video */}
+        {/* GT vs sim videos — rope PoC (Wang et al. data with our new
+            architecture) followed by OpenArm 4-camera 16-DoF (the same
+            architecture scaled up on first-party data). */}
         <Section title="What it looks like">
           <Body>
-            Below: a clip from the validation set. <strong>Left half</strong> is
-            the real robot recording (ground truth). <strong>Right half</strong>{" "}
-            is the model&rsquo;s rollout, conditioned on the same starting frame
-            and the same action stream — never seen during training. The model
-            never gets to peek at the GT pixels; everything on the right is
-            generated.
+            Two clips from the validation set.{" "}
+            <strong>Left half</strong>{" "}
+            is the real robot recording;{" "}
+            <strong>right half</strong>{" "}
+            is the model&rsquo;s rollout from the same starting frame and
+            the same action stream — never seen during training.
           </Body>
+
+          {/* Rope clip — single-camera proof of concept */}
           <figure className="mt-6 overflow-hidden rounded-2xl bg-black ring-1 ring-black/10">
             <video
               src="/videos/rope_gt_vs_sim.mp4"
@@ -168,9 +172,6 @@ export default function Whitepaper() {
               preload="metadata"
               style={{ width: "100%", display: "block", aspectRatio: "516 / 256" }}
             />
-            {/* Two labels split 50/50 to mirror the GT / generated split inside
-                the video frame itself. Centered over each half, separated by
-                a hairline divider that lines up with the mid-seam of the clip. */}
             <figcaption className="grid grid-cols-2 divide-x divide-white/10 border-t border-white/10 font-mono text-[11px] uppercase tracking-[0.18em] text-neutral-400">
               <div className="px-4 py-3 text-center">Ground truth</div>
               <div className="px-4 py-3 text-center">Generated</div>
@@ -180,18 +181,8 @@ export default function Whitepaper() {
             bimanual rope · validation episode br_0000
           </p>
           <Body>
-            The two streams stay aligned through the entire 20-second episode
-            — the model has learned the rope&rsquo;s contact dynamics, the
-            arms&rsquo; reachable workspace, and the gripper&rsquo;s closing
-            geometry from teleoperation alone.
-          </Body>
-        </Section>
-
-        {/* How it's trained */}
-        <Section title="How the model is trained">
-          <Body>
-            Training data comes from the bimanual teleoperation dataset released
-            by{" "}
+            The clip above is from a proof-of-concept model we trained on
+            the bimanual teleop dataset from{" "}
             <a
               href="https://www.yixuanwang.me/interactive_world_sim/"
               target="_blank"
@@ -200,52 +191,66 @@ export default function Whitepaper() {
             >
               Wang et&nbsp;al.&rsquo;s <em>Interactive World Simulator</em>
             </a>{" "}
-            project — four task families (T pushing, rope routing, mug grasping,
-            pile sweeping) collected on a bimanual teleop rig. We share that
-            project&rsquo;s core motivation — learn physics from real interaction
-            data so policies can be evaluated and trained without burning
-            hardware — but train it with a fundamentally different and more
-            scalable architecture: a single <em>diffusion-forcing transformer</em>{" "}
-            that handles all four task families through one unified action head,
-            at 256&times;256 RGB output, in place of one specialist model per task
-            at lower resolution.
-          </Body>
-          <Body>
-            Concretely, the simulator denoises next-frame latents in a
-            latent-VAE-encoded image space, conditioned on the past frames and
-            the action history. Headline numbers from the current checkpoint:
+            project. We took inspiration from that work but trained it with
+            a different, more scalable architecture: a single
+            diffusion-forcing transformer handling all four task families
+            through one unified action head at 256&times;256 RGB. The two
+            streams stay aligned through the full 20-second episode.
           </Body>
 
-          <Table
-            rows={[
-              ["Backbone", "DiT3D · 12 layers · 768 hidden · 12 heads · RoPE-3D"],
-              ["Patch size", "2 × 2 latent patches · 4-channel SD-VAE latents"],
-              ["Diffusion", "Cosine continuous schedule · v-prediction · 1000 train timesteps"],
-              ["Sampling", "DDIM · 20 steps at inference · sigmoid loss weighting"],
-              ["Resolution", "256 × 256 RGB output · 32 × 32 × 4 latents"],
-              ["Sequence", "16-frame context window · frame-skip 2 (5 Hz effective)"],
-              ["Action conditioning", "8-D end-effector deltas + grippers · 2 arms × 4 dims"],
-              ["Optimizer", "AdamW · lr 7.5e-5 · betas (0.9, 0.99) · grad-clip 1.0"],
-              ["Precision", "bf16-mixed · EMA 0.9999 · 50 epochs · batch 24"],
+          {/* OpenArm 4-cam, 16-DoF — same architecture scaled up */}
+          <Body>
+            Since then we&rsquo;ve scaled that architecture to a 16-DoF
+            action space and four synchronized camera views — which required
+            novel techniques for keeping the views physically consistent
+            with each other. To our knowledge, the clip below is the first
+            published world model that handles a production-scale bimanual
+            setup end-to-end in a single network:
+          </Body>
+          <List
+            items={[
+              <>
+                <strong>16-DoF action conditioning.</strong>{" "}
+                Joint-space commands, not a reduced end-effector
+                parameterization.
+              </>,
+              <>
+                <strong>Four synchronized camera views.</strong>{" "}
+                Left wrist, right wrist, chest, and waist — generated jointly
+                and consistent across views frame by frame.
+              </>,
+              <>
+                <strong>First-party data.</strong>{" "}
+                Collected by Fern on an OpenArm — the open-source 16-DoF
+                bimanual robot from Anvil — not a retrofit of a public
+                benchmark.
+              </>,
             ]}
           />
-
+          <figure className="mt-6 overflow-hidden rounded-2xl bg-black ring-1 ring-black/10">
+            <video
+              src="/videos/openarm_4cam_gt_vs_gen.mp4"
+              poster="/images/openarm_4cam_gt_vs_gen_poster.png"
+              autoPlay
+              loop
+              muted
+              playsInline
+              controls
+              preload="metadata"
+              style={{ width: "100%", display: "block", aspectRatio: "2 / 1" }}
+            />
+            <figcaption className="grid grid-cols-2 divide-x divide-white/10 border-t border-white/10 font-mono text-[11px] uppercase tracking-[0.18em] text-neutral-400">
+              <div className="px-4 py-3 text-center">Ground truth</div>
+              <div className="px-4 py-3 text-center">Generated</div>
+            </figcaption>
+          </figure>
+          <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-neutral-400">
+            OpenArm · 4-view validation episode
+          </p>
           <Body>
-            The action vector is the same one you&rsquo;d send a real bimanual
-            setup: 3-D end-effector translation deltas plus a continuous gripper
-            command, per arm. We pad smaller scenes (push-T, single-arm grasp)
-            with zeros so all four task families share one head, which lets the
-            model transfer contact priors between them — pushing in push-T helps
-            it learn arm-rope contacts, and vice versa.
-          </Body>
-
-          <Body>
-            Inference runs at about{" "}
-            <strong>3.5 frames per second on a single modern GPU</strong>, with
-            end-to-end latency under 300&thinsp;ms per generated frame. That&rsquo;s
-            fast enough that a researcher can drive the simulator interactively
-            from their laptop, the way you&rsquo;d drive a video game — which
-            is exactly what the demo below does.
+            All four views stay coherent with each other across the episode
+            — gripper poses, cloth geometry, and scene background line up
+            across cameras the way physics requires.
           </Body>
         </Section>
 
@@ -388,24 +393,3 @@ function List({ items }: { items: React.ReactNode[] }) {
   );
 }
 
-function Table({ rows }: { rows: [string, string][] }) {
-  return (
-    <div className="mt-5 overflow-hidden rounded-lg border border-neutral-200 bg-white/60">
-      <table className="w-full border-collapse text-[13px]">
-        <tbody>
-          {rows.map(([k, v], i) => (
-            <tr
-              key={k}
-              className={i < rows.length - 1 ? "border-b border-neutral-200" : ""}
-            >
-              <td className="w-[40%] px-4 py-2.5 font-mono text-[12px] uppercase tracking-wider text-neutral-500">
-                {k}
-              </td>
-              <td className="px-4 py-2.5 text-neutral-800">{v}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
